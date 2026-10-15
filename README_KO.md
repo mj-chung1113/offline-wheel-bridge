@@ -46,11 +46,22 @@ Copy-Item bridge.conf.example bridge.conf
 notepad bridge.conf
 ```
 
-### Relay 서버
+### Relay 서버: 저장소 준비 (최초 1회)
+
+relay 서버는 인터넷에 연결되어 있으므로 GitHub에서 저장소를 최초 한 번 clone합니다.
 
 ```bash
+cd ~
 git clone https://github.com/mj-chung1113/offline-wheel-bridge.git
 cd offline-wheel-bridge
+chmod +x deploy-conda-env.sh
+```
+
+이미 clone한 저장소가 있다면 다시 clone하지 않고 다음으로 갱신합니다.
+
+```bash
+cd ~/offline-wheel-bridge
+git pull --ff-only
 chmod +x deploy-conda-env.sh
 ```
 
@@ -122,6 +133,8 @@ command -v conda-pack
 이 PowerShell 창은 배포가 끝날 때까지 열어 둡니다. `Ctrl+C`로 터널을 닫습니다.
 
 ### 4.2 Relay에서 환경 배포
+
+`2. 최초 설정`에서 relay 서버에 저장소를 clone한 이후 실행합니다.
 
 relay의 다음 환경을 배포한다고 가정합니다.
 
