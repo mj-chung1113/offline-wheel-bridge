@@ -5,18 +5,18 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
-: "${SOURCE_ENV_ARCHIVE_DIR:?SOURCE_ENV_ARCHIVE_DIR is required in bridge.env}"
-: "${ENV_ARCHIVE_NAME:?ENV_ARCHIVE_NAME is required in bridge.env}"
-: "${TARGET_ENV_ARCHIVE_DIR:?TARGET_ENV_ARCHIVE_DIR is required in bridge.env}"
-: "${TARGET_TUNNEL_HOST:?TARGET_TUNNEL_HOST is required in bridge.env}"
-: "${TARGET_TUNNEL_PORT:?TARGET_TUNNEL_PORT is required in bridge.env}"
-: "${TARGET_SSH_USER:?TARGET_SSH_USER is required in bridge.env}"
+: "${SOURCE_ENV_ARCHIVE_DIR:?SOURCE_ENV_ARCHIVE_DIR is required in bridge.conf}"
+: "${ENV_ARCHIVE_NAME:?ENV_ARCHIVE_NAME is required in bridge.conf}"
+: "${TARGET_ENV_ARCHIVE_DIR:?TARGET_ENV_ARCHIVE_DIR is required in bridge.conf}"
+: "${TARGET_TUNNEL_HOST:?TARGET_TUNNEL_HOST is required in bridge.conf}"
+: "${REVERSE_TUNNEL_PORT:?REVERSE_TUNNEL_PORT is required in bridge.conf}"
+: "${TARGET_SSH_USER:?TARGET_SSH_USER is required in bridge.conf}"
 
 require_command ssh
 require_command rsync
 require_safe_absolute_path "$SOURCE_ENV_ARCHIVE_DIR" SOURCE_ENV_ARCHIVE_DIR
 require_safe_absolute_path "$TARGET_ENV_ARCHIVE_DIR" TARGET_ENV_ARCHIVE_DIR
-require_port "$TARGET_TUNNEL_PORT"
+require_port "$REVERSE_TUNNEL_PORT"
 if [[ ! "$ENV_ARCHIVE_NAME" =~ ^[A-Za-z0-9._-]+\.tar\.gz$ ]]; then
     printf 'Unsafe ENV_ARCHIVE_NAME: %s\n' "$ENV_ARCHIVE_NAME" >&2
     exit 4
@@ -30,9 +30,9 @@ if [[ ! -f "$archive" || ! -f "$checksum" ]]; then
 fi
 
 target="${TARGET_SSH_USER}@${TARGET_TUNNEL_HOST}"
-ssh_cmd="ssh -p ${TARGET_TUNNEL_PORT} -o ServerAliveInterval=30 -o ServerAliveCountMax=3"
+ssh_cmd="ssh -p ${REVERSE_TUNNEL_PORT} -o ServerAliveInterval=30 -o ServerAliveCountMax=3"
 
-ssh -p "$TARGET_TUNNEL_PORT" \
+ssh -p "$REVERSE_TUNNEL_PORT" \
     -o ServerAliveInterval=30 \
     -o ServerAliveCountMax=3 \
     "$target" \

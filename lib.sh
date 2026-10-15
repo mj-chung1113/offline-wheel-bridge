@@ -3,11 +3,11 @@
 set -euo pipefail
 
 BRIDGE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-BRIDGE_CONFIG="${BRIDGE_CONFIG:-$BRIDGE_DIR/bridge.env}"
+BRIDGE_CONFIG="${BRIDGE_CONFIG:-$BRIDGE_DIR/bridge.conf}"
 
 if [[ ! -f "$BRIDGE_CONFIG" ]]; then
     printf 'Configuration not found: %s\n' "$BRIDGE_CONFIG" >&2
-    printf 'Copy bridge.env.example to bridge.env and edit it first.\n' >&2
+    printf 'Copy bridge.conf.example to bridge.conf and edit it first.\n' >&2
     exit 2
 fi
 

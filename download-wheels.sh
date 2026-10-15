@@ -5,8 +5,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
-: "${PYTHON_BIN:?PYTHON_BIN is required in bridge.env}"
-: "${SOURCE_WHEELHOUSE:?SOURCE_WHEELHOUSE is required in bridge.env}"
+: "${PYTHON_BIN:?PYTHON_BIN is required in bridge.conf}"
+: "${SOURCE_WHEELHOUSE:?SOURCE_WHEELHOUSE is required in bridge.conf}"
 : "${BINARY_ONLY:=0}"
 
 require_safe_absolute_path "$SOURCE_WHEELHOUSE" SOURCE_WHEELHOUSE

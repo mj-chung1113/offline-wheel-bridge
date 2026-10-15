@@ -5,10 +5,10 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
-: "${SOURCE_ENV_PREFIX:?SOURCE_ENV_PREFIX is required in bridge.env}"
-: "${CONDA_PACK_BIN:?CONDA_PACK_BIN is required in bridge.env}"
-: "${SOURCE_ENV_ARCHIVE_DIR:?SOURCE_ENV_ARCHIVE_DIR is required in bridge.env}"
-: "${ENV_ARCHIVE_NAME:?ENV_ARCHIVE_NAME is required in bridge.env}"
+: "${SOURCE_ENV_PREFIX:?SOURCE_ENV_PREFIX is required in bridge.conf}"
+: "${CONDA_PACK_BIN:?CONDA_PACK_BIN is required in bridge.conf}"
+: "${SOURCE_ENV_ARCHIVE_DIR:?SOURCE_ENV_ARCHIVE_DIR is required in bridge.conf}"
+: "${ENV_ARCHIVE_NAME:?ENV_ARCHIVE_NAME is required in bridge.conf}"
 : "${PACK_IGNORE_MISSING:=0}"
 
 require_safe_absolute_path "$SOURCE_ENV_PREFIX" SOURCE_ENV_PREFIX

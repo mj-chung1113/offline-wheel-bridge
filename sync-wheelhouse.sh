@@ -5,17 +5,17 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
-: "${SOURCE_WHEELHOUSE:?SOURCE_WHEELHOUSE is required in bridge.env}"
-: "${TARGET_TUNNEL_HOST:?TARGET_TUNNEL_HOST is required in bridge.env}"
-: "${TARGET_TUNNEL_PORT:?TARGET_TUNNEL_PORT is required in bridge.env}"
-: "${TARGET_SSH_USER:?TARGET_SSH_USER is required in bridge.env}"
-: "${TARGET_WHEELHOUSE:?TARGET_WHEELHOUSE is required in bridge.env}"
+: "${SOURCE_WHEELHOUSE:?SOURCE_WHEELHOUSE is required in bridge.conf}"
+: "${TARGET_TUNNEL_HOST:?TARGET_TUNNEL_HOST is required in bridge.conf}"
+: "${REVERSE_TUNNEL_PORT:?REVERSE_TUNNEL_PORT is required in bridge.conf}"
+: "${TARGET_SSH_USER:?TARGET_SSH_USER is required in bridge.conf}"
+: "${TARGET_WHEELHOUSE:?TARGET_WHEELHOUSE is required in bridge.conf}"
 
 require_command ssh
 require_command rsync
 require_safe_absolute_path "$SOURCE_WHEELHOUSE" SOURCE_WHEELHOUSE
 require_safe_absolute_path "$TARGET_WHEELHOUSE" TARGET_WHEELHOUSE
-require_port "$TARGET_TUNNEL_PORT"
+require_port "$REVERSE_TUNNEL_PORT"
 
 if [[ ! -d "$SOURCE_WHEELHOUSE" ]]; then
     printf 'Source wheelhouse does not exist: %s\n' "$SOURCE_WHEELHOUSE" >&2
@@ -23,10 +23,10 @@ if [[ ! -d "$SOURCE_WHEELHOUSE" ]]; then
 fi
 
 target="${TARGET_SSH_USER}@${TARGET_TUNNEL_HOST}"
-ssh_cmd="ssh -p ${TARGET_TUNNEL_PORT} -o ServerAliveInterval=30 -o ServerAliveCountMax=3"
+ssh_cmd="ssh -p ${REVERSE_TUNNEL_PORT} -o ServerAliveInterval=30 -o ServerAliveCountMax=3"
 
 printf 'Checking tunnel and destination...\n'
-ssh -p "$TARGET_TUNNEL_PORT" \
+ssh -p "$REVERSE_TUNNEL_PORT" \
     -o ServerAliveInterval=30 \
     -o ServerAliveCountMax=3 \
     "$target" \
