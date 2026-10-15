@@ -22,9 +22,9 @@ CONDA_PACK_BIN="[필수 수정: relay conda-pack 실행파일 절대경로]"
 # [선택] relay의 환경 압축본 보관 위치입니다. 기본값은 수정 불필요합니다.
 LOCAL_ARCHIVE_DIR="/home/$RELAY_USER/conda-env-archives"
 
-# [수정 불필요] 아래 고정 경로가 현재 클러스터 구성과 다를 때만 바꿉니다.
-REMOTE_ARCHIVE_DIR="/my_workspace/env-archives"
+# [수정 불필요] 표준 Conda 구조입니다. 실제 환경은 envs 아래에 설치됩니다.
 REMOTE_CONDA_ROOT="/home/$REMOTE_USER/anaconda"
+REMOTE_ARCHIVE_DIR="$REMOTE_CONDA_ROOT/env-archives"
 
 # [선택] 배포 후 import를 검사할 모듈을 쉼표로 나열합니다. 비우면 생략합니다.
 SMOKE_IMPORTS="torch"

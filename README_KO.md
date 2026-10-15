@@ -97,9 +97,9 @@ CONDA_PACK_BIN="[relay conda-pack 실행파일 절대경로]"
 # [선택] relay의 압축본 보관 경로. 기본값은 수정 불필요
 LOCAL_ARCHIVE_DIR="/home/$RELAY_USER/conda-env-archives"
 
-# [수정 불필요] 현재 클러스터의 고정 경로와 다를 때만 변경
-REMOTE_ARCHIVE_DIR="/my_workspace/env-archives"
+# [수정 불필요] 표준 Conda 구조. 실제 환경은 envs 아래에 설치
 REMOTE_CONDA_ROOT="/home/$REMOTE_USER/anaconda"
+REMOTE_ARCHIVE_DIR="$REMOTE_CONDA_ROOT/env-archives"
 
 # [선택] 배포 후 import 검사. 쉼표로 여러 개 지정하며, 빈 값이면 생략
 SMOKE_IMPORTS="torch"
@@ -153,7 +153,7 @@ cd ~/offline-wheel-bridge
 
 1. `conda-pack`으로 환경 압축
 2. SHA-256 생성
-3. 역방향 터널을 통해 `/my_workspace/env-archives`로 전송
+3. 역방향 터널을 통해 `~/anaconda/env-archives`로 전송
 4. 컨테이너의 임시 staging 경로에 압축 해제
 5. `~/anaconda/envs/testconn`으로 배치 후 `conda-unpack`
 6. Python, pip 및 `SMOKE_IMPORTS` 검증
@@ -237,7 +237,7 @@ grep -qxF '[[ -f ~/.bashrc ]] && source ~/.bashrc' ~/.bash_profile || \
 ## 7. 운영 원칙
 
 - Windows의 터널 창은 배포가 끝날 때까지 닫지 않습니다.
-- 환경 압축본은 공유 `/my_workspace`에 두고, 실행 환경은 컨테이너 로컬 `~/anaconda/envs`에 둡니다.
+- 환경 압축본은 컨테이너의 `~/anaconda/env-archives`, 실행 환경은 표준 Conda 경로인 `~/anaconda/envs`에 둡니다.
 - 다른 컨테이너로 배포할 때는 해당 컨테이너의 `CLUSTER_PORT`와 별도의 `TUNNEL_PORT`를 사용합니다.
 - `bridge.conf`, SSH 개인키, 비밀번호는 Git에 커밋하지 않습니다.
 - 배포 중단 후에는 staging 디렉터리를 임의로 활성화하지 않습니다.

@@ -68,7 +68,7 @@ source "$CONFIG_PATH"
 
 required=(
     TUNNEL_HOST TUNNEL_PORT REMOTE_USER SOURCE_CONDA_ROOT CONDA_PACK_BIN
-    LOCAL_ARCHIVE_DIR REMOTE_ARCHIVE_DIR REMOTE_CONDA_ROOT
+    LOCAL_ARCHIVE_DIR
 )
 for key in "${required[@]}"; do
     value="${!key:-}"
@@ -77,6 +77,10 @@ for key in "${required[@]}"; do
         exit 2
     fi
 done
+
+# Standard remote layout. These can still be overridden in bridge.conf.
+: "${REMOTE_CONDA_ROOT:=/home/$REMOTE_USER/anaconda}"
+: "${REMOTE_ARCHIVE_DIR:=$REMOTE_CONDA_ROOT/env-archives}"
 
 for command_name in ssh rsync sha256sum; do
     command -v "$command_name" >/dev/null 2>&1 || {
