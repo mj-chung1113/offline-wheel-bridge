@@ -97,6 +97,37 @@ Windows PC와 relay 서버가 서로 다른 clone을 사용한다면 동일한 `
 
 스크립트는 `bridge.conf`의 `CLUSTER_HOST:CLUSTER_PORT`를 먼저 검사한 뒤, relay 서버의 `TARGET_TUNNEL_HOST:REVERSE_TUNNEL_PORT`에 역방향 터널을 엽니다. 동기화가 끝날 때까지 PowerShell 창을 열어 둡니다.
 
+### Relay 서버: 도구 저장소 자체를 클러스터로 전송
+
+클러스터가 인터넷에 연결되지 않아 GitHub에서 직접 `git clone`할 수 없다면, relay 서버에 받은 저장소를 역방향 터널로 한 번 전송합니다. Windows PC에서 터널을 열어 둔 상태로 relay 서버의 저장소 디렉터리에서 실행합니다.
+
+```bash
+source ./bridge.conf
+TARGET_TOOLS_DIR="[클러스터 공유 저장소 절대경로]/offline-wheel-bridge"
+
+ssh -p "$REVERSE_TUNNEL_PORT" \
+  "$TARGET_SSH_USER@$TARGET_TUNNEL_HOST" \
+  "mkdir -p '$TARGET_TOOLS_DIR'"
+
+rsync -az --partial \
+  --exclude '.git/' \
+  --exclude 'bridge.conf' \
+  -e "ssh -p $REVERSE_TUNNEL_PORT" \
+  ./ \
+  "$TARGET_SSH_USER@$TARGET_TUNNEL_HOST:$TARGET_TOOLS_DIR/"
+```
+
+`[클러스터 공유 저장소 절대경로]`에는 여러 컨테이너에서 볼 수 있는 공유 경로를 입력합니다. 예를 들어 공유 루트가 `/my_workspace`라면 `TARGET_TOOLS_DIR="/my_workspace/offline-wheel-bridge"`로 설정합니다. `.git`과 접속 정보가 담긴 `bridge.conf`는 전송하지 않습니다.
+
+클러스터에서는 한 번만 실행 권한을 설정합니다.
+
+```bash
+cd "[클러스터 공유 저장소 절대경로]/offline-wheel-bridge"
+chmod +x ./*.sh
+```
+
+이후 같은 공유 저장소를 마운트한 컨테이너들은 저장소를 다시 복사하지 않고 같은 스크립트를 사용할 수 있습니다. 저장소가 갱신되면 relay 서버에서 위 `rsync` 명령을 다시 실행하면 변경된 파일만 전송됩니다.
+
 ### Relay 서버: 패키지 다운로드와 전송
 
 개별 패키지:
