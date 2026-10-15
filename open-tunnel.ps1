@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) {
-    throw "Configuration not found: $ConfigPath`nCopy bridge.conf.example to bridge.conf and edit it first."
+    throw "Configuration not found: $ConfigPath`nCopy bridge.conf.example to bridge.conf and edit required values."
 }
 
 $config = @{}
@@ -14,9 +14,7 @@ foreach ($rawLine in Get-Content -LiteralPath $ConfigPath) {
     $line = $rawLine.Trim()
     if (-not $line -or $line.StartsWith("#")) { continue }
     $parts = $line.Split("=", 2)
-    if ($parts.Count -ne 2) {
-        throw "Invalid configuration line: $rawLine"
-    }
+    if ($parts.Count -ne 2) { throw "Invalid configuration line: $rawLine" }
     $key = $parts[0].Trim()
     $value = $parts[1].Trim()
     if (($value.StartsWith('"') -and $value.EndsWith('"')) -or
@@ -38,48 +36,46 @@ $relayUser = Get-RequiredConfig "RELAY_USER"
 $relayHost = Get-RequiredConfig "RELAY_HOST"
 $clusterHost = Get-RequiredConfig "CLUSTER_HOST"
 $clusterPortText = Get-RequiredConfig "CLUSTER_PORT"
-$tunnelHost = Get-RequiredConfig "TARGET_TUNNEL_HOST"
-$remotePortText = Get-RequiredConfig "REVERSE_TUNNEL_PORT"
+$tunnelHost = Get-RequiredConfig "TUNNEL_HOST"
+$tunnelPortText = Get-RequiredConfig "TUNNEL_PORT"
 
 $clusterPort = 0
-$remotePort = 0
+$tunnelPort = 0
 if (-not [int]::TryParse($clusterPortText, [ref]$clusterPort) -or
     $clusterPort -lt 1 -or $clusterPort -gt 65535) {
-    throw "Invalid CLUSTER_PORT in ${ConfigPath}: $clusterPortText"
+    throw "Invalid CLUSTER_PORT: $clusterPortText"
 }
-if (-not [int]::TryParse($remotePortText, [ref]$remotePort) -or
-    $remotePort -lt 1 -or $remotePort -gt 65535) {
-    throw "Invalid REVERSE_TUNNEL_PORT in ${ConfigPath}: $remotePortText"
+if (-not [int]::TryParse($tunnelPortText, [ref]$tunnelPort) -or
+    $tunnelPort -lt 1 -or $tunnelPort -gt 65535) {
+    throw "Invalid TUNNEL_PORT: $tunnelPortText"
 }
 
 if ($ValidateOnly) {
     Write-Host "Configuration is valid: $ConfigPath"
-    Write-Host "Relay: ${relayUser}@${relayHost}"
-    Write-Host "Cluster endpoint: ${clusterHost}:$clusterPort"
-    Write-Host "Reverse tunnel endpoint: ${tunnelHost}:$remotePort"
+    Write-Host "Windows -> cluster: ${clusterHost}:$clusterPort"
+    Write-Host "Relay tunnel endpoint: ${tunnelHost}:$tunnelPort"
     exit 0
 }
 
-Write-Host "Checking cluster SSH endpoint $clusterHost`:$clusterPort ..."
+Write-Host "Checking cluster SSH endpoint ${clusterHost}:$clusterPort ..."
 $probe = Test-NetConnection -ComputerName $clusterHost -Port $clusterPort -WarningAction SilentlyContinue
 if (-not $probe.TcpTestSucceeded) {
-    throw "Cannot reach $clusterHost`:$clusterPort. Connect the required VPN/network or start the cluster container first."
+    throw "Cannot reach ${clusterHost}:$clusterPort. Check the container and network/VPN."
 }
 
-$forward = "${tunnelHost}:${remotePort}:${clusterHost}:${clusterPort}"
-Write-Host "Opening reverse tunnel on ${relayHost}:${tunnelHost}:$remotePort"
+$forward = "${tunnelHost}:${tunnelPort}:${clusterHost}:${clusterPort}"
+Write-Host "Opening reverse tunnel through ${relayUser}@${relayHost}"
+Write-Host "Relay can reach the cluster at ${tunnelHost}:$tunnelPort"
 Write-Host "Keep this window open. Press Ctrl+C to close the tunnel."
 
-$sshArgs = @(
-    "-NT",
-    "-o", "ExitOnForwardFailure=yes",
-    "-o", "ServerAliveInterval=30",
-    "-o", "ServerAliveCountMax=3",
-    "-R", $forward,
+& ssh `
+    -NT `
+    -o ExitOnForwardFailure=yes `
+    -o ServerAliveInterval=30 `
+    -o ServerAliveCountMax=3 `
+    -R $forward `
     "${relayUser}@${relayHost}"
-)
 
-& ssh @sshArgs
 if ($LASTEXITCODE -ne 0) {
-    throw "ssh tunnel exited with code $LASTEXITCODE"
+    throw "SSH tunnel exited with code $LASTEXITCODE"
 }

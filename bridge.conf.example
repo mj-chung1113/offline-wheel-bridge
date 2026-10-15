@@ -1,35 +1,30 @@
-# 이 파일을 bridge.conf로 복사하고 대괄호 부분을 실제 값으로 교체하세요.
-# Windows PowerShell과 relay 서버의 Bash 스크립트가 모두 이 파일을 읽습니다.
-# 암호, 개인키, API 토큰은 기록하지 마세요.
+# bridge.conf로 복사한 뒤 [필수 수정] 값만 먼저 바꾸세요.
+# 이 파일에는 암호, 개인키, API 토큰을 기록하지 않습니다.
 
-# ── 접속 정보 ──────────────────────────────────────────────────────────────
-RELAY_USER="[relay 서버 사용자명]"
-RELAY_HOST="[relay 서버 IP 주소 또는 도메인]"
-CLUSTER_HOST="[클러스터 서버 IP 주소 또는 도메인]"
-CLUSTER_PORT="[클러스터 SSH 포트]"
+# ── Windows -> relay -> container 터널 ────────────────────────────────
+RELAY_USER="[필수 수정: relay 서버 사용자명]"
+RELAY_HOST="[필수 수정: relay 서버 IP 또는 도메인]"
+CLUSTER_HOST="[필수 수정: Windows에서 접속하는 클러스터 IP 또는 도메인]"
+CLUSTER_PORT="[필수 수정: 대상 컨테이너 SSH 포트]"
 
-# Windows PC가 relay 서버에 열 역방향 터널의 주소와 포트입니다.
-# 특별한 이유가 없다면 127.0.0.1을 유지하고, 포트만 다른 사용자와 겹치지 않게 정합니다.
-TARGET_TUNNEL_HOST="127.0.0.1"
-REVERSE_TUNNEL_PORT="44000"
+# [선택] 같은 relay에서 다른 사용자와 겹치지 않는 포트를 고릅니다.
+# TUNNEL_HOST는 특별한 이유가 없으면 수정하지 않습니다.
+TUNNEL_HOST="127.0.0.1"
+TUNNEL_PORT="44013"
 
-# 클러스터의 SSH 사용자와 공유 스토리지입니다.
-TARGET_SSH_USER="[클러스터 사용자명]"
-TARGET_WHEELHOUSE="[클러스터 공유 wheelhouse 절대경로]"
-TARGET_ENV_ARCHIVE_DIR="[클러스터 공유 환경 압축본 절대경로]"
+# ── relay에서 실행하는 환경 배포 ─────────────────────────────────────
+REMOTE_USER="[필수 수정: 컨테이너 SSH 사용자명]"
 
-# ── relay 서버의 Python 및 wheel 저장 위치 ───────────────────────────────
-PYTHON_BIN="[relay 서버 Python 실행파일 절대경로]"
-SOURCE_WHEELHOUSE="[relay 서버 wheelhouse 절대경로]"
+# [필수 수정] relay에 설치된 conda 루트와 conda-pack 실행파일입니다.
+SOURCE_CONDA_ROOT="[필수 수정: relay conda 루트 절대경로]"
+CONDA_PACK_BIN="[필수 수정: relay conda-pack 실행파일 절대경로]"
 
-# 1이면 binary wheel만 허용하고, 0이면 source distribution도 허용합니다.
-BINARY_ONLY="0"
+# [선택] relay의 환경 압축본 보관 위치입니다. 기본값은 수정 불필요합니다.
+LOCAL_ARCHIVE_DIR="/home/$RELAY_USER/conda-env-archives"
 
-# ── conda 환경 전체 패킹 ─────────────────────────────────────────────────
-SOURCE_ENV_PREFIX="[복사할 conda 환경 절대경로]"
-CONDA_PACK_BIN="[conda-pack 실행파일 절대경로]"
-SOURCE_ENV_ARCHIVE_DIR="[relay 서버 환경 압축본 저장 절대경로]"
-ENV_ARCHIVE_NAME="research-env.tar.gz"
+# [수정 불필요] 아래 고정 경로가 현재 클러스터 구성과 다를 때만 바꿉니다.
+REMOTE_ARCHIVE_DIR="/my_workspace/env-archives"
+REMOTE_CONDA_ROOT="/home/$REMOTE_USER/anaconda"
 
-# conda 관리 파일을 pip가 덮어쓴 원인을 확인한 환경에서만 1로 설정합니다.
-PACK_IGNORE_MISSING="0"
+# [선택] 배포 후 import를 검사할 모듈을 쉼표로 나열합니다. 비우면 생략합니다.
+SMOKE_IMPORTS="torch"
